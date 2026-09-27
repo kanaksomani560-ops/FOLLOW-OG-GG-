@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Kick Account Panel</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080a0e;--bg2:#0e1017;--bg3:#141720;--bg4:#1a1e2a;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.1);
+  --text:#e8eaf0;--muted:#4a5068;--muted2:#6b7280;
+  --kick:#53fc18;--kick2:#3dbb10;--red:#f23f42;--yellow:#f0a500;--blue:#5865f2;
+  --mono:'DM Mono',monospace;--display:'Syne',sans-serif;
+}
+body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* ── LAYOUT ── */
+.layout{display:grid;grid-template-columns:260px 1fr;min-height:100vh;}
+.sidebar{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:0;}
+.main{display:flex;flex-direction:column;overflow:hidden;}
+
+/* ── SIDEBAR ── */
+.sidebar-header{padding:20px 18px 16px;border-bottom:1px solid var(--border);}
+.logo{font-family:var(--display);font-size:18px;font-weight:800;color:var(--kick);letter-spacing:1px;}
+.logo span{color:var(--text);}
+.logo-sub{font-size:9px;color:var(--muted);letter-spacing:2px;margin-top:3px;text-transform:uppercase;}
+.sidebar-section{padding:14px 18px;border-bottom:1px solid var(--border);}
+.sidebar-label{font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:10px;}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.stat-card{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;}
+.stat-val{font-size:22px;font-weight:700;}
+.stat-val.green{color:var(--kick);}
+.stat-val.red{color:var(--red);}
+.stat-val.yellow{color:var(--yellow);}
+.stat-label{font-size:9px;color:var(--muted);margin-top:2px;letter-spacing:1px;}
+.chrome-status{display:flex;align-items:center;gap:8px;font-size:10px;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.dot.green{background:var(--kick);box-shadow:0 0 6px var(--kick);}
+.dot.red{background:var(--red);box-shadow:0 0 6px var(--red);}
+
+/* ── MAIN HEADER ── */
+.main-header{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.search-input{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;width:220px;transition:border-color .2s;}
+.search-input:focus{border-color:var(--kick);}
+.search-input::placeholder{color:var(--muted);}
+.header-actions{display:flex;gap:8px;align-items:center;}
+.filter-tabs{display:flex;gap:4px;}
+.filter-tab{padding:6px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;font-family:var(--mono);font-size:10px;color:var(--muted);cursor:pointer;transition:all .2s;font-weight:700;letter-spacing:.5px;}
+.filter-tab.active{background:var(--kick);color:#000;border-color:var(--kick);}
+.filter-tab:hover:not(.active){border-color:var(--kick);color:var(--kick);}
+
+/* ── ADD PANEL ── */
+.add-panel{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 24px;display:none;}
+.add-panel.open{display:block;}
+.add-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.add-col{display:flex;flex-direction:column;gap:8px;}
+.field-label{font-size:9px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:3px;}
+input,textarea{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--mono);font-size:11px;outline:none;transition:border-color .2s;width:100%;}
+input:focus,textarea:focus{border-color:var(--kick);}
+input::placeholder,textarea::placeholder{color:var(--muted);}
+textarea{resize:vertical;min-height:80px;font-size:10px;}
+
+/* ── BUTTONS ── */
+.btn{padding:9px 16px;border:none;border-radius:8px;font-family:var(--mono);font-size:11px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.5px;display:inline-flex;align-items:center;gap:6px;}
+.btn:active{transform:scale(.97);}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.btn-kick{background:var(--kick);color:#000;}
+.btn-kick:hover{filter:brightness(1.1);}
+.btn-outline{background:transparent;border:1px solid var(--border2);color:var(--text);}
+.btn-outline:hover{border-color:var(--kick);color:var(--kick);}
+.btn-red{background:transparent;border:1px solid rgba(242,63,66,.3);color:var(--red);}
+.btn-red:hover{background:rgba(242,63,66,.08);}
+.btn-blue{background:var(--blue);color:#fff;}
+.btn-sm{padding:5px 10px;font-size:10px;}
+.btn-xs{padding:3px 8px;font-size:10px;}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;}
+
+/* ── ACCOUNTS GRID ── */
+.accounts-area{flex:1;overflow-y:auto;padding:20px 24px;}
+.select-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.select-bar-left{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--muted);}
+.accounts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;}
+.account-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;transition:border-color .2s,transform .15s;cursor:default;}
+.account-card:hover{border-color:var(--border2);transform:translateY(-1px);}
+.account-card.selected{border-color:var(--kick);}
+.card-top{display:flex;align-items:center;gap:10px;}
+.acc-avatar{width:38px;height:38px;border-radius:50%;background:var(--kick);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#000;flex-shrink:0;}
+.acc-name{font-size:13px;font-weight:700;color:var(--text);}
+.acc-username{font-size:10px;color:var(--muted);margin-top:1px;}
+.acc-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:9px;font-weight:700;letter-spacing:.8px;}
+.badge-valid{background:rgba(83,252,24,.12);color:var(--kick);}
+.badge-invalid{background:rgba(242,63,66,.1);color:var(--red);}
+.badge-unknown{background:rgba(255,255,255,.05);color:var(--muted);}
+.token-preview{font-size:9px;color:var(--muted);font-family:var(--mono);}
+.card-actions{display:flex;gap:6px;flex-wrap:wrap;}
+.last-opened{font-size:9px;color:var(--muted);}
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted);}
+.empty-state .icon{font-size:48px;margin-bottom:12px;}
+.empty-state .title{font-size:14px;color:var(--muted2);margin-bottom:6px;}
+
+/* ── MODALS ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:999;display:none;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:24px;width:100%;max-width:440px;display:flex;flex-direction:column;gap:14px;}
+.modal-title{font-family:var(--display);font-size:16px;font-weight:800;}
+.modal-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;margin-left:auto;}
+.modal-header{display:flex;align-items:center;}
+
+/* ── URL BAR ── */
+.url-bar{display:flex;gap:8px;align-items:center;}
+.url-bar input{flex:1;}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:10px 16px;font-size:12px;z-index:9999;display:none;gap:8px;align-items:center;max-width:320px;}
+.toast.show{display:flex;}
+.toast.ok{border-color:rgba(83,252,24,.3);color:var(--kick);}
+.toast.err{border-color:rgba(242,63,66,.3);color:var(--red);}
+.toast.info{border-color:rgba(88,101,242,.3);color:#7983f5;}
+
+/* ── PROGRESS ── */
+.progress-bar{height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--kick);border-radius:2px;transition:width .3s;width:0;}
+
+/* ── CHECKBOX ── */
+.acc-check{width:16px;height:16px;accent-color:var(--kick);cursor:pointer;flex-shrink:0;}
+
+  /* ── QUICK SEND BOX ── */
+  .quick-send-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:990;display:none;}
+  .quick-send-overlay.open{display:block;}
+  .quick-send-box{position:fixed;z-index:991;background:var(--bg2);border:1px solid var(--kick);border-radius:16px;padding:22px;width:500px;display:flex;flex-direction:column;gap:14px;box-shadow:0 12px 60px rgba(0,0,0,.9);}
+  .qs-header{display:flex;align-items:center;gap:10px;}
+  .qs-avatar{width:46px;height:46px;border-radius:50%;background:var(--kick);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#000;flex-shrink:0;}
+  .qs-name{font-size:16px;font-weight:700;}
+  .qs-user{font-size:10px;color:var(--muted);}
+  .qs-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;margin-left:auto;}
+  .qs-close:hover{color:var(--red);}
+  .qs-channel-row{display:flex;gap:6px;align-items:center;}
+  .qs-channel-row input{flex:1;}
+  .qs-input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:12px 14px;color:var(--text);font-family:var(--mono);font-size:13px;outline:none;transition:border-color .2s;}
+  .qs-input:focus{border-color:var(--kick);}
+  .qs-input::placeholder{color:var(--muted);}
+  .qs-status{font-size:10px;padding:6px 10px;border-radius:6px;display:none;}
+  .qs-status.ok{background:rgba(83,252,24,.08);border:1px solid rgba(83,252,24,.2);color:var(--kick);display:block;}
+  .qs-status.err{background:rgba(242,63,66,.08);border:1px solid rgba(242,63,66,.2);color:var(--red);display:block;}
+  .qs-status.info{background:rgba(88,101,242,.08);border:1px solid rgba(88,101,242,.2);color:#7983f5;display:block;}
+  .qs-hint{font-size:9px;color:var(--muted);text-align:center;}
+
+  /* -- GLOBAL CHANNEL BAR -- */
+  .global-channel-bar{background:var(--bg3);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .gcb-label{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;white-space:nowrap;font-weight:700;}
+  .gcb-input{flex:1;max-width:300px;background:#1a1e2a;border:1px solid var(--border2);border-radius:8px;padding:8px 12px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;transition:border-color .2s;}
+  .gcb-input:focus{border-color:var(--kick);}
+  .gcb-input::placeholder{color:var(--muted);}
+  .gcb-status{font-size:11px;padding:5px 12px;border-radius:6px;display:none;}
+  .gcb-status.ok{background:rgba(83,252,24,.08);border:1px solid rgba(83,252,24,.2);color:var(--kick);display:inline-block;}
+  .gcb-status.err{background:rgba(242,63,66,.08);border:1px solid rgba(242,63,66,.2);color:var(--red);display:inline-block;}
+  .gcb-status.info{background:rgba(88,101,242,.08);border:1px solid rgba(88,101,242,.2);color:#7983f5;display:inline-block;}
+  .qs-global-note{font-size:11px;color:var(--kick);background:rgba(83,252,24,.06);border-radius:6px;padding:7px 12px;border:1px solid rgba(83,252,24,.2);}
+
+  /* -- PICTURE IN PICTURE PLAYER -- */
+  .pip-player{position:fixed;bottom:20px;right:20px;width:360px;background:var(--bg2);border:1px solid var(--border2);border-radius:14px;overflow:hidden;z-index:980;box-shadow:0 8px 40px rgba(0,0,0,.8);display:none;flex-direction:column;}
+  .pip-player.open{display:flex;}
+  .pip-header{display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--bg3);border-bottom:1px solid var(--border);cursor:move;user-select:none;}
+  .pip-title{font-size:11px;font-weight:700;color:var(--kick);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pip-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:2px 5px;border-radius:4px;line-height:1;}
+  .pip-btn:hover{color:var(--text);background:var(--bg4,#1a1e2a);}
+  .pip-iframe{width:100%;aspect-ratio:16/9;border:none;display:block;background:#000;}
+  .pip-bar{display:flex;align-items:center;gap:6px;padding:8px 12px;border-top:1px solid var(--border);}
+  .pip-input{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:6px 10px;color:var(--text);font-family:var(--mono);font-size:11px;outline:none;transition:border-color .2s;}
+  .pip-input:focus{border-color:var(--kick);}
+  .pip-input::placeholder{color:var(--muted);}
+  .pip-resize{position:absolute;bottom:0;left:0;width:14px;height:14px;cursor:sw-resize;z-index:2;}
+
+  /* -- CLIPBOARD PANEL -- */
+  .clip-fab{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:970;background:var(--kick);color:#000;font-size:13px;font-weight:800;writing-mode:vertical-rl;text-orientation:mixed;padding:14px 7px;border-radius:0 10px 10px 0;cursor:pointer;border:none;font-family:var(--mono);letter-spacing:1px;transition:background .2s;box-shadow:3px 0 16px rgba(83,252,24,.3);}
+  .clip-fab:hover{background:var(--kick2);}
+  .clip-panel{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:971;background:var(--bg2);border:1px solid var(--border2);border-left:none;border-radius:0 14px 14px 0;width:300px;display:none;flex-direction:column;box-shadow:6px 0 40px rgba(0,0,0,.8);max-height:80vh;}
+  .clip-panel.open{display:flex;}
+  .clip-panel-header{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--border);background:var(--bg3);}
+  .clip-panel-title{font-size:12px;font-weight:700;color:var(--kick);flex:1;letter-spacing:1px;text-transform:uppercase;}
+  .clip-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;}
+  .clip-close:hover{color:var(--red);}
+  .clip-add-row{display:flex;gap:6px;padding:10px 12px;border-bottom:1px solid var(--border);}
+  .clip-add-input{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:7px;padding:7px 10px;color:var(--text);font-family:var(--mono);font-size:11px;outline:none;transition:border-color .2s;}
+  .clip-add-input:focus{border-color:var(--kick);}
+  .clip-add-input::placeholder{color:var(--muted);}
+  .clip-list{flex:1;overflow-y:auto;padding:8px;}
+  .clip-item{display:flex;align-items:center;gap:6px;padding:7px 8px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);margin-bottom:6px;transition:border-color .15s;}
+  .clip-item:hover{border-color:var(--border2);}
+  .clip-item-text{flex:1;font-size:11px;color:var(--text);word-break:break-all;line-height:1.4;}
+  .clip-copy-btn{background:var(--bg4,#1a1e2a);border:1px solid var(--border2);border-radius:6px;color:var(--kick);font-size:10px;font-weight:700;padding:4px 8px;cursor:pointer;font-family:var(--mono);white-space:nowrap;transition:all .15s;flex-shrink:0;}
+  .clip-copy-btn:hover{background:var(--kick);color:#000;}
+  .clip-del-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;flex-shrink:0;padding:2px 4px;}
+  .clip-del-btn:hover{color:var(--red);}
+  .clip-empty{text-align:center;color:var(--muted);font-size:11px;padding:24px 12px;}
+  .clip-section-label{font-size:9px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;padding:4px 4px 6px;margin-top:4px;}
+
+  /* -- INLINE CARD CHAT -- */
+  .card-chat{display:flex;gap:5px;align-items:center;margin-top:6px;}
+  .card-chat-input{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:7px;padding:7px 10px;color:var(--text);font-family:var(--mono);font-size:11px;outline:none;transition:border-color .15s;min-width:0;}
+  .card-chat-input:focus{border-color:var(--kick);box-shadow:0 0 0 2px rgba(83,252,24,.1);}
+  .card-chat-input::placeholder{color:var(--muted);}
+  .card-chat-input:disabled{opacity:.35;cursor:not-allowed;}
+  .card-chat-send{background:var(--kick);border:none;border-radius:7px;color:#000;font-size:13px;font-weight:800;padding:7px 11px;cursor:pointer;flex-shrink:0;}
+  .card-chat-send:hover{background:var(--kick2);}
+  .card-chat-send:disabled{opacity:.3;cursor:not-allowed;}
+  .card-chat-status{font-size:9px;margin-top:2px;min-height:13px;color:transparent;}
+  .card-chat-status.ok{color:var(--kick);}
+  .card-chat-status.err{color:var(--red);}
+  .card-chat-status.info{color:#7983f5;}
+  /* -- KB NAV -- */
+  .account-card.kb-active{border-color:var(--kick) !important;box-shadow:0 0 0 2px rgba(83,252,24,.3),0 0 20px rgba(83,252,24,.15) !important;}
+  #kbHint{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#0e1017;border:1px solid #53fc18;border-radius:10px;padding:6px 18px;font-size:11px;color:#53fc18;z-index:9999;pointer-events:none;opacity:0;transition:opacity .25s;font-family:monospace;white-space:nowrap;}
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">⚡ KICK <span>PANEL</span></div>
+      <div class="logo-sub">Account Manager</div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Stats</div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-val green" id="statTotal">0</div><div class="stat-label">Total</div></div>
+        <div class="stat-card"><div class="stat-val green" id="statValid">0</div><div class="stat-label">Valid</div></div>
+        <div class="stat-card"><div class="stat-val red" id="statInvalid">0</div><div class="stat-label">Invalid</div></div>
+        <div class="stat-card"><div class="stat-val yellow" id="statSelected">0</div><div class="stat-label">Selected</div></div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Chrome</div>
+      <div class="chrome-status">
+        <div class="dot" id="chromeDot"></div>
+        <span id="chromeStatus">Checking...</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section" style="flex:1;">
+      <div class="sidebar-label">Quick Actions</div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <button class="btn btn-kick" onclick="openSelected()">▶ Open Selected</button>
+        <button class="btn btn-outline" onclick="validateAll()">⚡ Validate All</button>
+        <button class="btn btn-outline" onclick="openImportModal()">📥 Import Tokens</button>
+        <button class="btn btn-outline" onclick="exportAccounts()">📤 Export</button>
+        <button class="btn btn-red" onclick="deleteSelected()">🗑 Delete Selected</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- MAIN HEADER -->
+    <div class="main-header">
+      <input type="text" class="search-input" id="searchInput" placeholder="Search by name, username..." oninput="renderAccounts()"/>
+      <div class="header-actions">
+        <div class="filter-tabs">
+          <button class="filter-tab active" onclick="setFilter('all', this)">All</button>
+          <button class="filter-tab" onclick="setFilter('valid', this)">Valid</button>
+          <button class="filter-tab" onclick="setFilter('invalid', this)">Invalid</button>
+          <button class="filter-tab" onclick="setFilter('selected', this)">Selected</button>
+        </div>
+        <button class="btn btn-outline" onclick="togglePip()" id="pipToggleBtn" title="Watch Stream">&#127916; Watch</button>
+        <button class="btn btn-kick" onclick="toggleAddPanel()">+ Add Account</button>
+      </div>
+    </div>
+
+    <!-- GLOBAL CHANNEL BAR -->
+    <div class="global-channel-bar">
+      <span class="gcb-label">&#127760; Global Channel</span>
+      <input type="text" class="gcb-input" id="gcbChannel" placeholder="Channel name (e.g. bigdawgs76)"/>
+      <button class="btn btn-kick btn-sm" onclick="gcbConnect()">Connect</button>
+      <button class="btn btn-outline btn-sm" onclick="gcbDisconnect()" id="gcbDisconnectBtn" style="display:none;">Disconnect</button>
+      <span class="gcb-status" id="gcbStatus"></span>
+    </div>
+
+    <!-- ADD PANEL -->
+    <div class="add-panel" id="addPanel">
+      <div class="add-grid">
+        <div class="add-col">
+          <div>
+            <div class="field-label">Account Name (optional)</div>
+            <input type="text" id="addName" placeholder="Leave blank to auto-detect from Kick"/>
+          </div>
+          <div>
+            <div class="field-label">Token</div>
+            <input type="text" id="addToken" placeholder="Paste Kick session token..."/>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-kick" onclick="addAccount()">+ Add Account</button>
+            <button class="btn btn-outline" onclick="toggleAddPanel()">Cancel</button>
+          </div>
+          <div id="addMsg" style="font-size:11px;display:none;"></div>
+        </div>
+        <div class="add-col">
+          <div>
+            <div class="field-label">Bulk Add (one token per line)</div>
+            <textarea id="bulkTokens" placeholder="token1&#10;token2&#10;token3&#10;...&#10;&#10;Usernames auto-fetched from Kick API"></textarea>
+          </div>
+          <div class="progress-bar" id="bulkProgress" style="display:none;"><div class="progress-fill" id="bulkFill"></div></div>
+          <div class="btn-row">
+            <button class="btn btn-kick" onclick="addBulk()">+ Add All</button>
+          </div>
+          <div id="bulkMsg" style="font-size:11px;display:none;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACCOUNTS AREA -->
+    <div class="accounts-area">
+      <div class="select-bar">
+        <div class="select-bar-left">
+          <input type="checkbox" id="selectAllCheck" class="acc-check" onchange="toggleSelectAll(this.checked)"/>
+          <span id="selectLabel">0 selected</span>
+        </div>
+        <div class="url-bar">
+          <span style="font-size:11px;color:var(--muted);white-space:nowrap;">Open on:</span>
+          <input type="text" id="openUrl" placeholder="kick.com/channelname" style="width:200px;"/>
+        </div>
+      </div>
+      <div class="accounts-grid" id="accountsGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- IMPORT MODAL -->
+<div class="modal-overlay" id="importModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">📥 Import Tokens</div>
+      <button class="modal-close" onclick="closeModal('importModal')">✕</button>
+    </div>
+    <div style="font-size:11px;color:var(--muted);">Paste tokens (one per line). Format: <code style="color:var(--kick)">name: token</code> or just <code style="color:var(--kick)">token</code></div>
+    <textarea id="importArea" style="min-height:140px;" placeholder="name: token&#10;token&#10;name: token"></textarea>
+    <div class="progress-bar" id="importProgress" style="display:none;"><div class="progress-fill" id="importFill"></div></div>
+    <div class="btn-row">
+      <button class="btn btn-kick" onclick="doImport()">Import All</button>
+      <button class="btn btn-outline" onclick="closeModal('importModal')">Cancel</button>
+    </div>
+    <div id="importMsg" style="font-size:11px;display:none;"></div>
+  </div>
+</div>
+
+<!-- RENAME MODAL -->
+<div class="modal-overlay" id="renameModal">
+  <div class="modal" style="max-width:320px;">
+    <div class="modal-header">
+      <div class="modal-title">✏ Rename Account</div>
+      <button class="modal-close" onclick="closeModal('renameModal')">✕</button>
+    </div>
+    <input type="text" id="renameInput" placeholder="New name..."/>
+    <div class="btn-row">
+      <button class="btn btn-kick" onclick="doRename()">Save</button>
+      <button class="btn btn-outline" onclick="closeModal('renameModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const API = '';
+let accounts = [];
+let selected = new Set();
+let filterMode = 'all';
+let renamingId = null;
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+async function init() {
+  await Promise.all([loadAccounts(), checkChrome()]);
+  setInterval(loadAccounts, 10000);
+}
+
+async function loadAccounts() {
+  const r = await fetch(`${API}/api/accounts`);
+  const d = await r.json();
+  accounts = d.accounts || [];
+  updateStats();
+  renderAccounts();
+}
+
+async function checkChrome() {
+  const r = await fetch(`${API}/api/chrome`);
+  const d = await r.json();
+  document.getElementById('chromeDot').className = 'dot ' + (d.ok ? 'green' : 'red');
+  document.getElementById('chromeStatus').textContent = d.ok ? 'Chrome found' : 'Chrome not found';
+}
+
+// ── STATS ────────────────────────────────────────────────────────────────────
+function updateStats() {
+  document.getElementById('statTotal').textContent = accounts.length;
+  document.getElementById('statValid').textContent = accounts.filter(a => a.valid === true).length;
+  document.getElementById('statInvalid').textContent = accounts.filter(a => a.valid === false).length;
+  document.getElementById('statSelected').textContent = selected.size;
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function renderAccounts() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  let filtered = accounts.filter(a => {
+    if (search && !a.name.toLowerCase().includes(search) && !a.username.toLowerCase().includes(search)) return false;
+    if (filterMode === 'valid') return a.valid === true;
+    if (filterMode === 'invalid') return a.valid === false;
+    if (filterMode === 'selected') return selected.has(a.id);
+    return true;
+  });
+
+  const grid = document.getElementById('accountsGrid');
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="icon">👤</div><div class="title">No accounts found</div><div>Add accounts using the button above</div></div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(acc => {
+    const validBadge = acc.valid === true ? '<span class="badge badge-valid">✓ Valid</span>' : acc.valid === false ? '<span class="badge badge-invalid">✗ Invalid</span>' : '<span class="badge badge-unknown">? Unknown</span>';
+    const isSelected = selected.has(acc.id);
+    return `
+    <div class="account-card ${isSelected ? 'selected' : ''}" id="card-${acc.id}">
+      <div class="card-top">
+        <input type="checkbox" class="acc-check" data-id="${acc.id}" ${isSelected ? 'checked' : ''} onchange="toggleSelect('${acc.id}', this.checked)"/>
+        <div class="acc-avatar" onclick="openQuickSend('${acc.id}', event)" style="cursor:pointer;" title="Quick Send">${acc.name.charAt(0).toUpperCase()}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="acc-name">${acc.name}</div>
+          <div class="acc-username">${acc.username ? '@' + acc.username : 'Username unknown'}</div>
+        </div>
+        ${validBadge}
+      </div>
+      <div class="card-chat">
+        <input type="text" class="card-chat-input" id="cmsg-${acc.id}"
+          placeholder="${chatChannel ? '#'+chatChannel : 'Connect global channel first'}"
+          ${chatChannel ? '' : 'disabled'}
+          onkeydown="if(event.key==='Enter'){event.preventDefault();cardSend('${acc.id}')}"
+        />
+        <button class="card-chat-send" onclick="cardSend('${acc.id}')" ${chatChannel ? '' : 'disabled'}>&#10148;</button>
+      </div>
+      <div class="card-chat-status" id="cstat-${acc.id}"></div>
+      <div class="card-actions">
+        <button class="btn btn-kick btn-sm" onclick="openOne('${acc.id}')">▶ Open</button>
+        <button class="btn btn-outline btn-sm" onclick="validateOne('${acc.id}')">⚡</button>
+        <button class="btn btn-outline btn-sm" onclick="openRename('${acc.id}', '${acc.name.replace(/'/g, "\\'")}')">✏</button>
+        <button class="btn btn-outline btn-sm" onclick="copyToken('${acc.token}', this)">📋</button>
+        <button class="btn btn-red btn-sm" onclick="deleteOne('${acc.id}')">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('selectLabel').textContent = `${selected.size} selected`;
+  updateStats();
+}
+
+// ── FILTER ────────────────────────────────────────────────────────────────────
+function setFilter(mode, btn) {
+  filterMode = mode;
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderAccounts();
+}
+
+// ── SELECT ────────────────────────────────────────────────────────────────────
+function toggleSelect(id, checked) {
+  if (checked) selected.add(id); else selected.delete(id);
+  const card = document.getElementById('card-' + id);
+  if (card) card.classList.toggle('selected', checked);
+  document.getElementById('selectLabel').textContent = `${selected.size} selected`;
+  updateStats();
+}
+
+function toggleSelectAll(checked) {
+  accounts.forEach(a => { if (checked) selected.add(a.id); else selected.delete(a.id); });
+  renderAccounts();
+}
+
+// ── ADD PANEL ─────────────────────────────────────────────────────────────────
+function toggleAddPanel() {
+  document.getElementById('addPanel').classList.toggle('open');
+}
+
+async function addAccount() {
+  const token = document.getElementById('addToken').value.trim();
+  const name = document.getElementById('addName').value.trim();
+  if (!token) { showAddMsg('Enter a token', 'red'); return; }
+  showAddMsg('Fetching Kick username...', 'kick');
+  const r = await fetch(`${API}/api/accounts/add`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ token, name })
+  });
+  const d = await r.json();
+  if (d.ok) {
+    document.getElementById('addToken').value = '';
+    document.getElementById('addName').value = '';
+    showAddMsg(`✓ Added: ${d.account.name} (@${d.account.username || 'unknown'})`, 'kick');
+    await loadAccounts();
+  } else {
+    showAddMsg('✗ ' + d.error, 'red');
+  }
+}
+
+async function addBulk() {
+  const raw = document.getElementById('bulkTokens').value.trim();
+  if (!raw) return;
+  const tokens = raw.split('\n').map(l => l.trim()).filter(Boolean);
+  if (!tokens.length) return;
+
+  document.getElementById('bulkProgress').style.display = 'block';
+  showBulkMsg(`Adding ${tokens.length} tokens...`, 'kick');
+
+  let added = 0;
+  for (let i = 0; i < tokens.length; i++) {
+    document.getElementById('bulkFill').style.width = ((i / tokens.length) * 100) + '%';
+    const r = await fetch(`${API}/api/accounts/add`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ token: tokens[i] })
+    });
+    const d = await r.json();
+    if (d.ok) added++;
+    showBulkMsg(`${i+1}/${tokens.length} — ${added} added`, 'kick');
+    await new Promise(r => setTimeout(r, 300));
+  }
+
+  document.getElementById('bulkFill').style.width = '100%';
+  showBulkMsg(`✓ Done — ${added}/${tokens.length} added`, 'kick');
+  document.getElementById('bulkTokens').value = '';
+  await loadAccounts();
+  setTimeout(() => document.getElementById('bulkProgress').style.display = 'none', 2000);
+}
+
+function showAddMsg(text, color) {
+  const el = document.getElementById('addMsg');
+  el.textContent = text;
+  el.style.color = color === 'kick' ? 'var(--kick)' : 'var(--red)';
+  el.style.display = 'block';
+}
+function showBulkMsg(text, color) {
+  const el = document.getElementById('bulkMsg');
+  el.textContent = text;
+  el.style.color = color === 'kick' ? 'var(--kick)' : 'var(--red)';
+  el.style.display = 'block';
+}
+
+// ── OPEN ──────────────────────────────────────────────────────────────────────
+function getOpenUrl() {
+  const val = document.getElementById('openUrl').value.trim();
+  if (!val) return 'https://kick.com';
+  if (val.startsWith('http')) return val;
+  return 'https://kick.com/' + val;
+}
+
+async function openOne(id) {
+  const url = getOpenUrl();
+  toast('Opening account...', 'info');
+  const r = await fetch(`${API}/api/accounts/open`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ id, url })
+  });
+  const d = await r.json();
+  if (d.ok) { toast('✓ Chrome opened!', 'ok'); await loadAccounts(); }
+  else toast('✗ ' + d.error, 'err');
+}
+
+async function openSelected() {
+  if (!selected.size) { toast('Select accounts first', 'err'); return; }
+  const url = getOpenUrl();
+  toast(`Opening ${selected.size} accounts...`, 'info');
+  const r = await fetch(`${API}/api/accounts/open_multi`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ ids: [...selected], url })
+  });
+  const d = await r.json();
+  toast(`✓ Opened ${d.opened} accounts`, 'ok');
+  await loadAccounts();
+}
+
+// ── VALIDATE ──────────────────────────────────────────────────────────────────
+async function validateOne(id) {
+  toast('Validating...', 'info');
+  const r = await fetch(`${API}/api/accounts/validate`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ id })
+  });
+  const d = await r.json();
+  if (d.ok) { toast(`✓ ${d.account.username || 'done'} — ${d.account.valid ? 'Valid' : 'Invalid'}`, d.account.valid ? 'ok' : 'err'); await loadAccounts(); }
+  else toast('✗ Error', 'err');
+}
+
+async function validateAll() {
+  toast(`Validating ${accounts.length} accounts...`, 'info');
+  const r = await fetch(`${API}/api/accounts/validate_all`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}' });
+  const d = await r.json();
+  const valid = d.accounts.filter(a => a.valid).length;
+  toast(`✓ ${valid}/${d.accounts.length} valid`, 'ok');
+  await loadAccounts();
+}
+
+// ── DELETE ────────────────────────────────────────────────────────────────────
+async function deleteOne(id) {
+  if (!confirm('Delete this account and its Chrome profile?')) return;
+  await fetch(`${API}/api/accounts/delete`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ id })
+  });
+  selected.delete(id);
+  toast('Account deleted', 'ok');
+  await loadAccounts();
+}
+
+async function deleteSelected() {
+  if (!selected.size) { toast('Select accounts first', 'err'); return; }
+  if (!confirm(`Delete ${selected.size} accounts and their Chrome profiles?`)) return;
+  for (const id of selected) {
+    await fetch(`${API}/api/accounts/delete`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ id })
+    });
+  }
+  selected.clear();
+  toast('Accounts deleted', 'ok');
+  await loadAccounts();
+}
+
+// ── RENAME ────────────────────────────────────────────────────────────────────
+function openRename(id, name) {
+  renamingId = id;
+  document.getElementById('renameInput').value = name;
+  document.getElementById('renameModal').classList.add('open');
+  setTimeout(() => document.getElementById('renameInput').focus(), 100);
+}
+
+async function doRename() {
+  const name = document.getElementById('renameInput').value.trim();
+  if (!name) return;
+  await fetch(`${API}/api/accounts/update`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ id: renamingId, name })
+  });
+  closeModal('renameModal');
+  await loadAccounts();
+}
+
+// ── COPY TOKEN ────────────────────────────────────────────────────────────────
+function copyToken(token, btn) {
+  navigator.clipboard.writeText(token).then(() => {
+    btn.textContent = '✓';
+    setTimeout(() => btn.textContent = '📋', 1500);
+  });
+}
+
+// ── IMPORT ────────────────────────────────────────────────────────────────────
+function openImportModal() { document.getElementById('importModal').classList.add('open'); }
+
+async function doImport() {
+  const text = document.getElementById('importArea').value.trim();
+  if (!text) return;
+  const lines = text.split('\n').filter(l => l.trim());
+  document.getElementById('importProgress').style.display = 'block';
+  let added = 0;
+  for (let i = 0; i < lines.length; i++) {
+    document.getElementById('importFill').style.width = ((i / lines.length) * 100) + '%';
+    const line = lines[i].trim();
+    let name = '', token = line;
+    if (line.includes(': ')) { const idx = line.indexOf(': '); name = line.substring(0, idx); token = line.substring(idx + 2); }
+    const r = await fetch(`${API}/api/accounts/add`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ token: token.trim(), name: name.trim() })
+    });
+    const d = await r.json();
+    if (d.ok) added++;
+    const msg = document.getElementById('importMsg');
+    msg.textContent = `${i+1}/${lines.length} — ${added} added`;
+    msg.style.color = 'var(--kick)';
+    msg.style.display = 'block';
+    await new Promise(r => setTimeout(r, 300));
+  }
+  document.getElementById('importFill').style.width = '100%';
+  await loadAccounts();
+  toast(`✓ Imported ${added} accounts`, 'ok');
+  setTimeout(() => { closeModal('importModal'); document.getElementById('importProgress').style.display = 'none'; }, 1500);
+}
+
+// ── EXPORT ────────────────────────────────────────────────────────────────────
+function exportAccounts() {
+  const lines = accounts.map(a => `${a.name}: ${a.token}`).join('\n');
+  const blob = new Blob([lines], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'kick_accounts.txt';
+  a.click();
+  toast('✓ Exported', 'ok');
+}
+
+// ── MODAL ─────────────────────────────────────────────────────────────────────
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// Enter key for rename
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('renameInput').addEventListener('keydown', e => { if (e.key === 'Enter') doRename(); });
+  document.getElementById('gcbChannel').addEventListener('keydown', e => { if (e.key === 'Enter') gcbConnect(); });
+  document.getElementById('addToken').addEventListener('keydown', e => { if (e.key === 'Enter') addAccount(); });
+});
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+let toastTimer;
+function toast(text, type = 'info') {
+  const el = document.getElementById('toast');
+  el.textContent = text;
+  el.className = 'toast show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+init();
+
+// -- GLOBAL CHANNEL ----------------------------------------------------------
+let chatChatroomId = null;
+let chatChannel = '';
+
+async function gcbConnect() {
+  const channel = document.getElementById('gcbChannel').value.trim().toLowerCase().split('/').pop();
+  if (!channel) return;
+  setGcbStatus('Connecting...', 'info');
+  try {
+    const r = await fetch(`${API}/api/chat/connect`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ channel })
+    });
+    const d = await r.json();
+    if (d.ok) {
+      chatChatroomId = d.chatroom_id;
+      chatChannel = channel;
+      setGcbStatus('Connected to #' + channel, 'ok');
+      document.getElementById('gcbDisconnectBtn').style.display = '';
+    } else {
+      setGcbStatus('Error: ' + (d.error||'unknown'), 'err');
+    }
+  } catch(e) {
+    setGcbStatus('Connection failed', 'err');
+  }
+}
+
+function gcbDisconnect() {
+  chatChatroomId = null; chatChannel = '';
+  document.getElementById('gcbChannel').value = '';
+  document.getElementById('gcbDisconnectBtn').style.display = 'none';
+  setGcbStatus('Disconnected', 'err');
+  setTimeout(() => { document.getElementById('gcbStatus').className = 'gcb-status'; }, 2000);
+}
+
+function setGcbStatus(text, type) {
+  const el = document.getElementById('gcbStatus');
+  el.textContent = text; el.className = 'gcb-status ' + type;
+}
+
+
+// ── QUICK SEND ────────────────────────────────────────────────────────────────
+let qsAccountId = null;
+let qsChatroomId = null;
+let qsChannelName = '';
+
+function openQuickSend(id, event) {
+  event && event.stopPropagation();
+  const acc = accounts.find(a => a.id === id);
+  if (!acc) return;
+  qsAccountId = id;
+  qsChatroomId = null;
+
+  // Position box near click
+  const box = document.getElementById('qsBox');
+  box.style.display = 'flex';
+  document.getElementById('qsOverlay').classList.add('open');
+
+  // Populate
+  document.getElementById('qsAvatar').textContent = acc.name.charAt(0).toUpperCase();
+  document.getElementById('qsName').textContent = acc.name;
+  document.getElementById('qsUser').textContent = acc.username ? '@' + acc.username : '';
+  document.getElementById('qsMessage').value = '';
+  document.getElementById('qsSendStatus').className = 'qs-status';
+  document.getElementById('qsConnStatus').className = 'qs-status';
+
+  // Use global channel if connected
+  const globalNote = document.getElementById('qsGlobalNote');
+  const channelRow = document.getElementById('qsChannelRow');
+  if (chatChatroomId && chatChannel) {
+    if (globalNote) globalNote.style.display = 'block';
+    if (channelRow) channelRow.style.display = 'none';
+    qsChatroomId = chatChatroomId;
+    qsChannelName = chatChannel;
+    document.getElementById('qsChannel').value = chatChannel;
+    showQsConnStatus('✓ Connected to #' + chatChannel, 'ok');
+  } else {
+    if (globalNote) globalNote.style.display = 'none';
+    if (channelRow) channelRow.style.display = 'flex';
+    document.getElementById('qsChannel').value = '';
+    document.getElementById('qsConnStatus').className = 'qs-status';
+  }
+
+  // Position box in center-ish
+  box.style.transform = 'none';
+  if (event) {
+    const bw = 510, bh = 340;
+    const x = Math.min(event.clientX, window.innerWidth - bw - 10);
+    const y = Math.min(event.clientY, window.innerHeight - bh - 10);
+    box.style.left = Math.max(10, x) + 'px';
+    box.style.top = Math.max(10, y) + 'px';
+  } else {
+    box.style.left = '50%';
+    box.style.top = '50%';
+    box.style.transform = 'translate(-50%,-50%)';
+  }
+
+  setTimeout(() => {
+    if (qsChatroomId) document.getElementById('qsMessage').focus();
+    else document.getElementById('qsChannel').focus();
+  }, 50);
+}
+
+function closeQuickSend() {
+  document.getElementById('qsBox').style.display = 'none';
+  document.getElementById('qsOverlay').classList.remove('open');
+  qsAccountId = null;
+}
+
+async function qsConnect() {
+  const channel = document.getElementById('qsChannel').value.trim().toLowerCase().split('/').pop();
+  if (!channel) return;
+  showQsConnStatus('Connecting...', 'info');
+  const r = await fetch(`${API}/api/chat/connect`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ channel })
+  });
+  const d = await r.json();
+  if (d.ok) {
+    qsChatroomId = d.chatroom_id;
+    qsChannelName = channel;
+    // Note: only updates local qs vars, not the global channel bar
+    showQsConnStatus('✓ Connected to #' + channel, 'ok');
+    document.getElementById('qsMessage').focus();
+  } else {
+    showQsConnStatus('✗ ' + d.error, 'err');
+  }
+}
+
+async function qsSend() {
+  if (!qsChatroomId) { showQsSendStatus('Connect to a channel first', 'err'); return; }
+  const message = document.getElementById('qsMessage').value.trim();
+  if (!message) return;
+  showQsSendStatus('Sending...', 'info');
+  const r = await fetch(`${API}/api/chat/send`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ account_id: qsAccountId, chatroom_id: qsChatroomId, message, channel: qsChannelName })
+  });
+  const d = await r.json();
+  if (d.ok) {
+    showQsSendStatus('✓ Sent!', 'ok');
+    document.getElementById('qsMessage').value = '';
+    document.getElementById('qsMessage').focus();
+  } else {
+    showQsSendStatus('✗ ' + d.error, 'err');
+  }
+}
+
+function showQsConnStatus(text, type) {
+  const el = document.getElementById('qsConnStatus');
+  el.textContent = text; el.className = 'qs-status ' + type;
+}
+function showQsSendStatus(text, type) {
+  const el = document.getElementById('qsSendStatus');
+  el.textContent = text; el.className = 'qs-status ' + type;
+  if (type === 'ok') setTimeout(() => el.className = 'qs-status', 2000);
+}
+
+// Enter key handlers
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('qsMessage').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); qsSend(); }
+    if (e.key === 'Escape') closeQuickSend();
+  });
+  document.getElementById('qsChannel').addEventListener('keydown', e => {
+    if (e.key === 'Enter') qsConnect();
+    if (e.key === 'Escape') closeQuickSend();
+  });
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('qsBox').style.display !== 'none') closeQuickSend();
+});
+
+// -- PIP PLAYER ---------------------------------------------------------------
+let pipWidth = 360;
+
+function togglePip() {
+  const p = document.getElementById('pipPlayer');
+  const isOpen = p.classList.contains('open');
+  if (isOpen) { closePip(); }
+  else {
+    p.classList.add('open');
+    document.getElementById('pipToggleBtn').textContent = '\u25a0 Stream';
+    document.getElementById('pipChannel').focus();
+  }
+}
+
+function closePip() {
+  const p = document.getElementById('pipPlayer');
+  p.classList.remove('open');
+  document.getElementById('pipIframe').src = '';
+  document.getElementById('pipToggleBtn').innerHTML = '&#127916; Watch';
+}
+
+function pipLoad() {
+  const ch = document.getElementById('pipChannel').value.trim().toLowerCase().split('/').pop();
+  if (!ch) return;
+  document.getElementById('pipIframe').src = 'https://player.kick.com/' + ch + '?autoplay=true&muted=false';
+  document.getElementById('pipTitle').textContent = ch;
+}
+
+function pipSmaller() {
+  pipWidth = Math.max(220, pipWidth - 80);
+  document.getElementById('pipPlayer').style.width = pipWidth + 'px';
+}
+function pipLarger() {
+  pipWidth = Math.min(700, pipWidth + 80);
+  document.getElementById('pipPlayer').style.width = pipWidth + 'px';
+}
+
+// Drag to move
+(function() {
+  const el = () => document.getElementById('pipPlayer');
+  const handle = () => document.getElementById('pipDragHandle');
+  let ox=0,oy=0,sx=0,sy=0,dragging=false;
+  document.addEventListener('mousedown', e => {
+    if (!handle().contains(e.target)) return;
+    dragging=true;
+    const r = el().getBoundingClientRect();
+    ox = e.clientX - r.left; oy = e.clientY - r.top;
+    el().style.right='auto'; el().style.bottom='auto';
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    el().style.left = Math.max(0, Math.min(window.innerWidth - el().offsetWidth, e.clientX - ox)) + 'px';
+    el().style.top  = Math.max(0, Math.min(window.innerHeight - el().offsetHeight, e.clientY - oy)) + 'px';
+  });
+  document.addEventListener('mouseup', () => dragging=false);
+})();
+
+// Enter key for pip channel
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('pipChannel').addEventListener('keydown', e => {
+    if (e.key === 'Enter') pipLoad();
+  });
+});
+
+// -- CLIPBOARD PANEL ----------------------------------------------------------
+let clipItems = JSON.parse(localStorage.getItem('clipItems') || '[]');
+
+function toggleClip() {
+  const panel = document.getElementById('clipPanel');
+  const fab = document.getElementById('clipFab');
+  const isOpen = panel.classList.contains('open');
+  panel.classList.toggle('open');
+  fab.style.display = isOpen ? '' : 'none';
+  if (!isOpen) renderClip();
+}
+
+function clipSave() {
+  localStorage.setItem('clipItems', JSON.stringify(clipItems));
+}
+
+function clipAdd() {
+  const input = document.getElementById('clipAddInput');
+  const text = input.value.trim();
+  if (!text) return;
+  clipItems.unshift({ id: Date.now(), text });
+  clipSave();
+  renderClip();
+  input.value = '';
+  input.focus();
+}
+
+function clipDelete(id) {
+  clipItems = clipItems.filter(i => i.id !== id);
+  clipSave();
+  renderClip();
+}
+
+function clipCopy(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copied';
+    btn.style.background = 'var(--kick)';
+    btn.style.color = '#000';
+    setTimeout(() => {
+      btn.textContent = orig;
+      btn.style.background = '';
+      btn.style.color = '';
+    }, 1500);
+  });
+}
+
+function renderClip() {
+  const list = document.getElementById('clipList');
+  if (!clipItems.length) {
+    list.innerHTML = '<div class="clip-empty">No saved messages yet.<br>Add one above!</div>';
+    return;
+  }
+  list.innerHTML = clipItems.map(item => `
+    <div class="clip-item" id="ci-${item.id}">
+      <div class="clip-item-text">${item.text.replace(/</g,'&lt;')}</div>
+      <button class="clip-copy-btn" onclick="clipCopy(${JSON.stringify(item.text)}, this)">&#128203; Copy</button>
+      <button class="clip-del-btn" onclick="clipDelete(${item.id})" title="Delete">&#x2715;</button>
+    </div>
+  `).join('');
+}
+
+// Enter key for clip add
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('clipAddInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') clipAdd();
+  });
+});
+
+// -- INLINE CARD CHAT ---------------------------------------------------------
+async function cardSend(accountId) {
+  const inp = document.getElementById('cmsg-' + accountId);
+  if (!inp) return;
+  if (!chatChatroomId || !chatChannel) {
+    cardStat(accountId, 'Connect global channel first', 'err'); return;
+  }
+  const msg = inp.value.trim();
+  if (!msg) return;
+  inp.disabled = true;
+  cardStat(accountId, 'Sending...', 'info');
+  try {
+    const r = await fetch(`${API}/api/chat/send`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ account_id: accountId, chatroom_id: chatChatroomId, message: msg, channel: chatChannel })
+    });
+    const d = await r.json();
+    if (d.ok) {
+      cardStat(accountId, '✓ Sent!', 'ok');
+      inp.value = '';
+      setTimeout(() => cardStat(accountId, '', ''), 2000);
+    } else {
+      cardStat(accountId, '✗ ' + (d.error || 'Failed'), 'err');
+    }
+  } catch(e) {
+    cardStat(accountId, '✗ Error', 'err');
+  }
+  inp.disabled = false;
+  inp.focus();
+}
+
+function cardStat(id, txt, type) {
+  const el = document.getElementById('cstat-' + id);
+  if (el) { el.textContent = txt; el.className = 'card-chat-status ' + type; }
+}
+
+// Re-render when global channel connects/disconnects so inputs enable/disable
+const _origGcbConnect = gcbConnect;
+gcbConnect = async function() { await _origGcbConnect.call(this); renderAccounts(); };
+const _origGcbDisconnect = gcbDisconnect;
+gcbDisconnect = function() { _origGcbDisconnect.call(this); renderAccounts(); };
+
+// -- KEYBOARD NAV -------------------------------------------------------------
+let _kbIdx = -1;
+let _kbTimer = null;
+
+function _kbInputs() {
+  return Array.from(document.querySelectorAll('.card-chat-input')).filter(el => !el.disabled);
+}
+
+function _kbCols() {
+  // Calculate how many columns are visible based on grid layout
+  const grid = document.getElementById('accountsGrid');
+  if (!grid) return 1;
+  const gridWidth = grid.offsetWidth;
+  const cardWidth = 260 + 12; // minmax + gap
+  return Math.max(1, Math.floor(gridWidth / cardWidth));
+}
+
+function _kbGo(dir) {
+  const inputs = _kbInputs();
+  if (!inputs.length) { _kbHint('Connect global channel first!'); return; }
+
+  document.querySelectorAll('.account-card.kb-active').forEach(c => c.classList.remove('kb-active'));
+
+  const cols = _kbCols();
+  let next = _kbIdx;
+
+  if (_kbIdx < 0) {
+    next = 0;
+  } else {
+    if (dir === 'down')  next = _kbIdx + cols;
+    if (dir === 'up')    next = _kbIdx - cols;
+    if (dir === 'right') next = _kbIdx + 1;
+    if (dir === 'left')  next = _kbIdx - 1;
+  }
+
+  // Clamp
+  if (next < 0) next = 0;
+  if (next >= inputs.length) next = inputs.length - 1;
+  _kbIdx = next;
+
+  const inp = inputs[_kbIdx];
+  const card = inp.closest('.account-card');
+  if (card) {
+    card.classList.add('kb-active');
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  inp.focus();
+  const name = card ? (card.querySelector('.acc-name') || {}).textContent || '' : '';
+  _kbHint('↑↓←→  ' + (_kbIdx+1) + ' / ' + inputs.length + (name ? '  —  ' + name : ''));
+}
+
+function _kbHint(txt) {
+  const el = document.getElementById('kbHint');
+  if (!el) return;
+  el.textContent = txt; el.style.opacity = '1';
+  clearTimeout(_kbTimer);
+  _kbTimer = setTimeout(() => el.style.opacity = '0', 2200);
+}
+
+window.addEventListener('keydown', function(e) {
+  const a = document.activeElement;
+  const isCard = a && a.classList.contains('card-chat-input');
+  const isOther = a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA') && !isCard;
+  if (isOther) return;
+
+  if (e.key === 'ArrowDown')  { e.preventDefault(); e.stopPropagation(); _kbGo('down'); }
+  else if (e.key === 'ArrowUp')   { e.preventDefault(); e.stopPropagation(); _kbGo('up'); }
+  else if (e.key === 'ArrowRight') { e.preventDefault(); e.stopPropagation(); _kbGo('right'); }
+  else if (e.key === 'ArrowLeft')  { e.preventDefault(); e.stopPropagation(); _kbGo('left'); }
+  else if (e.key === 'Escape' && isCard) {
+    a.blur();
+    document.querySelectorAll('.account-card.kb-active').forEach(c => c.classList.remove('kb-active'));
+    _kbIdx = -1;
+  }
+}, true);
+
+document.addEventListener('focusin', function(e) {
+  if (!e.target.classList.contains('card-chat-input')) return;
+  const inputs = _kbInputs();
+  const i = inputs.indexOf(e.target);
+  if (i >= 0) _kbIdx = i;
+  document.querySelectorAll('.account-card.kb-active').forEach(c => c.classList.remove('kb-active'));
+  const card = e.target.closest('.account-card');
+  if (card) card.classList.add('kb-active');
+});
+</script>
+
+<!-- QUICK SEND OVERLAY -->
+<div class="quick-send-overlay" id="qsOverlay" onclick="closeQuickSend()"></div>
+<div class="quick-send-box" id="qsBox" style="display:none;top:50%;left:50%;transform:translate(-50%,-50%);">
+  <div class="qs-header">
+    <div class="qs-avatar" id="qsAvatar">?</div>
+    <div style="flex:1;">
+      <div class="qs-name" id="qsName">Account</div>
+      <div class="qs-user" id="qsUser"></div>
+    </div>
+    <button class="qs-close" onclick="closeQuickSend()">&#x2715;</button>
+  </div>
+  <div class="qs-global-note" id="qsGlobalNote" style="display:none;">&#127760; Using global channel &#8212; no need to reconnect each time</div>
+  <div class="qs-channel-row" id="qsChannelRow">
+    <input type="text" class="qs-input" id="qsChannel" placeholder="Channel (e.g. bigdawgs76)" style="flex:1;"/>
+    <button class="btn btn-kick btn-sm" onclick="qsConnect()">Connect</button>
+  </div>
+  <div class="qs-status" id="qsConnStatus"></div>
+  <input type="text" class="qs-input" id="qsMessage" placeholder="Type your message and press Enter..."/>
+  <div class="qs-status" id="qsSendStatus"></div>
+  <div class="qs-hint">Press Enter to send &#x2022; ESC to close</div>
+</div>
+
+<!-- PIP PLAYER -->
+<div class="pip-player" id="pipPlayer">
+  <div class="pip-header" id="pipDragHandle">
+    <span>&#127916;</span>
+    <span class="pip-title" id="pipTitle">Stream</span>
+    <button class="pip-btn" onclick="pipSmaller()" title="Smaller">&#8722;</button>
+    <button class="pip-btn" onclick="pipLarger()" title="Larger">&#43;</button>
+    <button class="pip-btn" onclick="closePip()" title="Close">&#x2715;</button>
+  </div>
+  <iframe class="pip-iframe" id="pipIframe" src="" allowfullscreen allow="autoplay"></iframe>
+  <div class="pip-bar">
+    <input type="text" class="pip-input" id="pipChannel" placeholder="Streamer name (e.g. xqc)"/>
+    <button class="btn btn-kick btn-sm" onclick="pipLoad()">Load</button>
+  </div>
+  <div class="pip-resize" id="pipResize"></div>
+</div>
+
+<!-- CLIPBOARD FAB -->
+<button class="clip-fab" id="clipFab" onclick="toggleClip()">&#128203; SAVED</button>
+
+<!-- CLIPBOARD PANEL -->
+<div class="clip-panel" id="clipPanel">
+  <div class="clip-panel-header">
+    <span class="clip-panel-title">&#128203; Saved Messages</span>
+    <button class="clip-close" onclick="toggleClip()">&#x2715;</button>
+  </div>
+  <div class="clip-add-row">
+    <input type="text" class="clip-add-input" id="clipAddInput" placeholder="Type message or casino name..."/>
+    <button class="btn btn-kick btn-sm" onclick="clipAdd()">+ Add</button>
+  </div>
+  <div class="clip-list" id="clipList"></div>
+</div>
+<div id="kbHint"></div>
+</body>
+</html>
